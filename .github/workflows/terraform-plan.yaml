@@ -1,10 +1,10 @@
-name: Terraform plan
+name: Run a Terraform plan
 
 on:
   workflow_dispatch:
 
 jobs:
   call-create-backend-config-file:
-    uses: ./.github/actions/create-backend-config-file.yml
+    uses: ./.github/actions/create-backend-config-file.yml@main
     with:
       environment: 	TF_DEV_SECRETS
