@@ -1,17 +1,13 @@
 name: Create backend config file
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        description: 'The environment to use for the backend config file'
-        required: true
-        type: string
+  workflow_dispatch:
+
   
 jobs:
   create-backend-config-file-from-env:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: TF_DEV_SECRETS
     env:
       TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
       TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
@@ -28,4 +24,14 @@ jobs:
           ref: main
           fetch-depth: 0
       - name: Perform envsubst on provider_secrets_template with environment variables
-        run: cat provider_secrets_template | envsubst > provider_secrets
+        run: envsubst < provider_secrets_template > provider_secrets
+      - name: Setup Terraform Provider
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform init with backend config
+        run: terraform init -backend-config=provider_secrets
+      - name: Terraform plan
+        id: plan
+        run: terraform plan
+      - name: Output plan
+        run: echo "${{ steps.plan.outputs.stdout }}"
+      
