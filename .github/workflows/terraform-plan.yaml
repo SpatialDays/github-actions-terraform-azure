@@ -1,0 +1,20 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Terraform Plan on Pull Request to Main
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  TF_VAR_CLIENT_ID: ${{secrets.TF_VAR_CLIENT_ID}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo out TF_VAR_CLIENT_ID
+        run: echo $TF_VAR_CLIENT_ID
+    
+
