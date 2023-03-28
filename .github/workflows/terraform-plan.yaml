@@ -6,20 +6,21 @@ on:
   pull_request:
     branches: ["main"]
   workflow_dispatch:
-env:
-  TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
-  TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
-  TF_VAR_CLIENT_SECRET: ${{ secrets.TF_VAR_CLIENT_SECRET }}
-  TF_VAR_TENANT_ID: ${{ secrets.TF_VAR_TENANT_ID }}
-  TF_VAR_STATE_RESOURCE_GROUP_NAME: ${{ vars.TF_VAR_STATE_RESOURCE_GROUP_NAME }}
-  TF_VAR_STATE_STORAGE_ACCOUNT_NAME: ${{ vars.TF_VAR_STATE_STORAGE_ACCOUNT_NAME }}
-  TF_VAR_STATE_CONTAINER_NAME: ${{ vars.TF_VAR_STATE_CONTAINER_NAME }}
-  TF_VAR_ENVIRONMENT: ${{ vars.TF_VAR_ENVIRONMENT }}
+
   
 jobs:
   build:
     runs-on: ubuntu-latest
     environment: TF_DEV_SECRETS
+    env:
+      TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
+      TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
+      TF_VAR_CLIENT_SECRET: ${{ secrets.TF_VAR_CLIENT_SECRET }}
+      TF_VAR_TENANT_ID: ${{ secrets.TF_VAR_TENANT_ID }}
+      TF_VAR_STATE_RESOURCE_GROUP_NAME: ${{ vars.TF_VAR_STATE_RESOURCE_GROUP_NAME }}
+      TF_VAR_STATE_STORAGE_ACCOUNT_NAME: ${{ vars.TF_VAR_STATE_STORAGE_ACCOUNT_NAME }}
+      TF_VAR_STATE_CONTAINER_NAME: ${{ vars.TF_VAR_STATE_CONTAINER_NAME }}
+      TF_VAR_ENVIRONMENT: ${{ vars.TF_VAR_ENVIRONMENT }}
     steps:
       - name: Checkout code on main branch
         uses: actions/checkout@v2
