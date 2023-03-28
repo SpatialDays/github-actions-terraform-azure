@@ -1,15 +1,17 @@
 name: Create backend config file
 
 on:
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
-
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The environment to use for the backend config file'
+        required: true
+        type: string
   
 jobs:
   create-backend-config-file-from-env:
     runs-on: ubuntu-latest
-    environment: TF_DEV_SECRETS
+    environment: ${{ inputs.environment }}
     env:
       TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
       TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
