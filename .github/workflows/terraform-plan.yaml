@@ -7,14 +7,17 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+env:
+  TF_VAR_CLIENT_ID: ${{secrets.TF_VAR_CLIENT_ID}}
+  
 jobs:
   build:
     runs-on: ubuntu-latest
     environment: TF_DEV_SECRETS
-    env:
-      TF_VAR_CLIENT_ID: ${{secrets.TF_VAR_CLIENT_ID}}
     steps:
       - name: Echo out TF_VAR_CLIENT_ID
         run: echo $TF_VAR_CLIENT_ID
+      - name: Echo out TF_VAR_ENVIRONMENT
+        run: echo ${{vars.TF_VAR_ENVIRONMENT}}
     
 
