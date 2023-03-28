@@ -12,9 +12,23 @@ jobs:
     runs-on: ubuntu-latest
     environment: TF_DEV_SECRETS
     steps:
-      - name: Echo out TF_VAR_CLIENT_ID
-        run: echo ${{secrets.TF_VAR_CLIENT_ID}}
-      - name: Echo out TF_VAR_ENVIRONMENT
-        run: echo $TF_VAR_ENVIRONMENT
-    
+      - name: Checkout code on main branch
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Perform envsubst on provider_secrets_template with environment variables
+        env:
+          TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
+          TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
+          TF_VAR_CLIENT_SECRET: ${{ secrets.TF_VAR_CLIENT_SECRET }}
+          TF_VAR_TENANT_ID: ${{ secrets.TF_VAR_TENANT_ID }}
+          TF_VAR_STATE_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_VAR_STATE_STORAGE_ACCOUNT_NAME }}
+          TF_VAR_STATE_STORAGE_ACCOUNT_NAME: ${{ vars.TF_VAR_STATE_STORAGE_ACCOUNT_NAME }}
+          TF_VAR_STATE_CONTAINER_NAME: ${{ vars.TF_VAR_STATE_CONTAINER_NAME }}
+          TF_VAR_ENVIRONMENT: ${{ vars.TF_VAR_ENVIRONMENT }}
+        run:
+          cat provider_secrets_template | envsubst > provider_secrets
+      - name: Display provider_secrets
+        run: cat provider_secrets
 
