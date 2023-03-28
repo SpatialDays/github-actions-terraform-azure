@@ -5,6 +5,6 @@ on:
 
 jobs:
   call-create-backend-config-file:
-    uses: ./.github/workflows/create-backend-config-file.yml
+    uses: ./.github/workflows/create-backend-config-file.yaml
     with:
       environment: 	TF_DEV_SECRETS
