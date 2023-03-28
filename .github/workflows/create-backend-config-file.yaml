@@ -1,4 +1,4 @@
-name: Create backend config file
+name: Terraform plan
 
 on:
   workflow_dispatch:
