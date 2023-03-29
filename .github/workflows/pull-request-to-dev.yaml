@@ -37,7 +37,7 @@ jobs:
         run: terraform init -backend-config=provider_secrets
       - name: Terraform plan
         id: plan
-        run: terraform plan
+        run: terraform plan -no-color
       - name: Output stdout into comment
         uses: peter-evans/create-or-update-comment@v2
         with:
