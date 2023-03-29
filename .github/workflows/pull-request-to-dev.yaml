@@ -34,15 +34,29 @@ jobs:
       - name: Setup Terraform Provider
         uses: hashicorp/setup-terraform@v2
       - name: Terraform init with backend config
+        id: init
         run: terraform init -backend-config=provider_secrets
+      - name: Terraform validate
+        id: validate
+        run: terraform validate -no-color
       - name: Terraform plan
         id: plan
         run: terraform plan -no-color
+        continue-on-error: true
       - name: Output stdout into comment
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
+            ### Results
+            #### Terraform Initialization ${{ steps.init.outcome }}
+            #### Terraform Validation ${{ steps.validate.outcome }}
+            <br>
+            Terraform validation for this pull request:
+            ```
+            ${{ steps.validate.outputs.stdout }}
+            ```
+            <br>
             Terraform plan for this pull request:
             ```diff
             ${{ steps.plan.outputs.stdout }}
