@@ -37,11 +37,12 @@ jobs:
         run: terraform validate -no-color
         continue-on-error: true
       - name: Terraform apply
+        if: steps.validate.outcome != 'failure'
         id: apply
         run: terraform apply -no-color -auto-approve
         continue-on-error: true
-      - name: Create or Update Issue with Error Message
-        if: steps.validate.outcome == 'failure' || steps.apply.outcome == 'failure'
+      - name: Create or Update Issue with validate error message
+        if: steps.validate.outcome == 'failure'
         uses: dacbd/create-issue-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -51,10 +52,20 @@ jobs:
             ```
             ${{ steps.validate.outputs.stderr }}
             ```
+      - name: Create or Update Issue with apply error message
+        if: steps.apply.outcome == 'failure'
+        uses: dacbd/create-issue-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Terraform apply failed on push to dev, unique id ${{ github.run_id }}
+          body: |
             Output of terraform apply:
             ```
             ${{ steps.apply.outputs.stderr }}
             ```
-      - name: Fail the build if terraform validate or terraform apply failed
-        if: steps.validate.outcome == 'failure' || steps.apply.outcome == 'failure'
+      - name: Fail the build if terraform validate failed
+        if: steps.validate.outcome == 'failure'
+        run: exit 1
+      - name: Fail the build if terraform apply failed
+        if: steps.apply.outcome == 'failure'
         run: exit 1
