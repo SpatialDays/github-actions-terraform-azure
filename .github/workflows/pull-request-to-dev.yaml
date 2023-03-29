@@ -47,6 +47,10 @@ jobs:
             ### Results
             Terraform Initialization: ${{ steps.init.outcome }}
             Terraform Validation: ${{ steps.validate.outcome }}
+            Terraform validatiomn output for this pull request:
+            ```
+            ${{ steps.validate.outputs.stdout }}
+            ```
             Terraform plan for this pull request:
             ```diff
             ${{ steps.plan.outputs.stdout }}
