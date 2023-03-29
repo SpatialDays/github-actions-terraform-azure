@@ -1,0 +1,75 @@
+name: Terraform plan on pull request to dev
+
+on:
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+  
+jobs:
+  create-backend-config-file-from-env:
+    runs-on: ubuntu-latest
+    environment: TF_DEV_SECRETS
+    env:
+      TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
+      TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
+      TF_VAR_CLIENT_SECRET: ${{ secrets.TF_VAR_CLIENT_SECRET }}
+      TF_VAR_TENANT_ID: ${{ secrets.TF_VAR_TENANT_ID }}
+      TF_VAR_STATE_RESOURCE_GROUP_NAME: ${{ vars.TF_VAR_STATE_RESOURCE_GROUP_NAME }}
+      TF_VAR_STATE_STORAGE_ACCOUNT_NAME: ${{ vars.TF_VAR_STATE_STORAGE_ACCOUNT_NAME }}
+      TF_VAR_STATE_CONTAINER_NAME: ${{ vars.TF_VAR_STATE_CONTAINER_NAME }}
+      TF_VAR_ENVIRONMENT: ${{ vars.TF_VAR_ENVIRONMENT }}
+    steps:
+      - name: Checkout code on main branch
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Perform envsubst on provider_secrets_template with environment variables
+        run: envsubst < provider_secrets_template > provider_secrets
+      - name: Setup Terraform Provider
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform init with backend config
+        run: terraform init -backend-config=provider_secrets
+      - name: Terraform plan
+        id: plan
+        run: terraform plan
+      - name: Output plan into comment
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      
