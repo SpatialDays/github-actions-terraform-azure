@@ -42,12 +42,16 @@ jobs:
         continue-on-error: true
       - name: Create or Update Issue with Error Message
         if: steps.validate.outcome == 'failure' || steps.apply.outcome == 'failure'
-        uses: peter-evans/create-issue-from-error@v1
+        uses: dacbd/create-issue-action@v1
         with:
-          title: "Deployment failed for Pull Request #${{ github.event.pull_request.number }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Terraform apply failed on date ${{ github.event.issue.created_at }}
           body: |
-            Deployment failed for Pull Request #${{ github.event.pull_request.number }}.
-            The following error occurred:
+            Output of terraform validate:
             ```
-            ${{ steps.apply.outputs.stderr }}
+            ${{ steps.validate.outputs.stdout }}
+            ```
+            Output of terraform apply:
+            ```
+            ${{ steps.apply.outputs.stdout }}
             ```
