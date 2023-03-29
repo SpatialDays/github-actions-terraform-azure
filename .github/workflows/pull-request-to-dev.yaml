@@ -8,7 +8,6 @@ on:
   pull_request:
     branches:
       - dev
-
   
 jobs:
   create-backend-config-file-from-env:
@@ -51,9 +50,7 @@ jobs:
             ### Results
             Terraform Initialization: ${{ steps.init.outcome }}
             Terraform Validation: ${{ steps.validate.outcome }}
-            <br>
             Terraform plan for this pull request:
             ```diff
             ${{ steps.plan.outputs.stdout }}
             ```
-          reactions: rocket
