@@ -49,15 +49,17 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Results
-            #### Terraform Initialization ${{ steps.init.outcome }}
-            #### Terraform Validation ${{ steps.validate.outcome }}
+            Terraform Initialization: ${{ steps.init.outcome }}
+            Terraform Validation: ${{ steps.validate.outcome }}
             <br>
             Terraform validation for this pull request:
-            ```
+            <br>
+            ``` diff
             ${{ steps.validate.outputs.stdout }}
             ```
             <br>
             Terraform plan for this pull request:
+            <br>
             ```diff
             ${{ steps.plan.outputs.stdout }}
             ```
