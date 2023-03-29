@@ -2,4 +2,3 @@
 resource "azurerm_resource_grop" "test" {
   name     = "test"
   location = "uksouth"
-}
