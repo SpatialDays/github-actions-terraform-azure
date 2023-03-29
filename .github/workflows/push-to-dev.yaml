@@ -10,7 +10,7 @@ on:
       - dev
   
 jobs:
-  create-backend-config-file-from-env:
+  terraform-apply:
     runs-on: ubuntu-latest
     environment: TF_DEV_SECRETS
     env:
