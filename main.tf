@@ -7,7 +7,11 @@ terraform {
   }
   required_version = ">= 1.1.0"
   backend "azurerm" {
-
+    # will get configured with -backend-config= in the terraform init command
+    # the backend config file will be created using envsubst and provider_secrets_template file
+    # env vars are set in the github action
+    # env vars used in provider_secrets_template file are also used in the variable blocks below
+    # to configure the azurerm provider
   }
 }
 
