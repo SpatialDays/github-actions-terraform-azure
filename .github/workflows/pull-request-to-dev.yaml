@@ -52,14 +52,7 @@ jobs:
             Terraform Initialization: ${{ steps.init.outcome }}
             Terraform Validation: ${{ steps.validate.outcome }}
             <br>
-            Terraform validation for this pull request:
-            <br>
-            ``` diff
-            ${{ steps.validate.outputs.stdout }}
-            ```
-            <br>
             Terraform plan for this pull request:
-            <br>
             ```diff
             ${{ steps.plan.outputs.stdout }}
             ```
