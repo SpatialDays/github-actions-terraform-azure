@@ -25,6 +25,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
+        id: extract_branch
       - name: Perform envsubst on provider_secrets_template with environment variables
         run: envsubst < provider_secrets_template > provider_secrets
       - name: Setup Terraform Provider
@@ -46,8 +50,10 @@ jobs:
         uses: dacbd/create-issue-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: Terraform apply failed on push to dev, unique id ${{ github.run_id }}
+          title: Terraform validate failed on push to branch ${{ steps.extract_branch.outputs.branch }}
           body: |
+            Terraform validate failed on push to branch ${{ steps.extract_branch.outputs.branch }}, unique id ${{ github.run_id }}
+            <br>
             Output of terraform validate:
             ```
             ${{ steps.validate.outputs.stderr }}
@@ -57,8 +63,10 @@ jobs:
         uses: dacbd/create-issue-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: Terraform apply failed on push to dev, unique id ${{ github.run_id }}
+          title: Terraform apply failed on push to branch ${{ steps.extract_branch.outputs.branch }}
           body: |
+            Terraform apply failed on push to branch ${{ steps.extract_branch.outputs.branch }}, unique id ${{ github.run_id }}
+            <br>
             Output of terraform apply:
             ```
             ${{ steps.apply.outputs.stderr }}
