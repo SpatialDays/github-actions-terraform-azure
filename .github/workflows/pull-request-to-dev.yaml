@@ -1,14 +1,16 @@
 name: Terraform plan on pull request to dev
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 on:
   pull_request:
     branches:
       - dev
-  workflow_dispatch:
-
   
 jobs:
-  create-backend-config-file-from-env:
+  terraform-plan:
     runs-on: ubuntu-latest
     environment: TF_DEV_SECRETS
     env:
@@ -21,55 +23,50 @@ jobs:
       TF_VAR_STATE_CONTAINER_NAME: ${{ vars.TF_VAR_STATE_CONTAINER_NAME }}
       TF_VAR_ENVIRONMENT: ${{ vars.TF_VAR_ENVIRONMENT }}
     steps:
-      - name: Checkout code on main branch
+      - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: main
-          fetch-depth: 0
       - name: Perform envsubst on provider_secrets_template with environment variables
         run: envsubst < provider_secrets_template > provider_secrets
       - name: Setup Terraform Provider
         uses: hashicorp/setup-terraform@v2
       - name: Terraform init with backend config
+        id: init
         run: terraform init -backend-config=provider_secrets
+      - name: Terraform validate
+        id: validate
+        run: terraform validate -no-color
+        continue-on-error: true
       - name: Terraform plan
+        if: steps.validate.outcome == 'success'
         id: plan
-        run: terraform plan
-      - name: Output plan into comment
-        uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        run: terraform plan -no-color
+        continue-on-error: true
+      - name: Output stdout into comment
+        if: steps.validate.outcome == 'success' && steps.plan.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            <details><summary>Validation Output</summary>
-
-            \`\`\`\n
-            ${{ steps.validate.outputs.stdout }}
-            \`\`\`
-
-            </details>
-
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-
-            <details><summary>Show Plan</summary>
-
-            \`\`\`\n
-            ${process.env.PLAN}
-            \`\`\`
-
-            </details>
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-      
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Results
+            Terraform Initialization: ${{ steps.init.outcome }}
+            Terraform Validation: ${{ steps.validate.outcome }}
+            Terraform plan for this pull request:
+            ```diff
+            ${{ steps.plan.outputs.stdout }}
+            ```
+      - name: Output stderr into comment
+        if: steps.validate.outcome == 'failure' || steps.plan.outcome == 'failure'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Results
+            Terraform Initialization: ${{ steps.init.outcome }}
+            Terraform Validation: ${{ steps.validate.outcome }}
+            Terraform validation output for this pull request:
+            ```
+            ${{ steps.validate.outputs.stderr }}
+            ```
+      - name: Fail the build if validation or plan fails
+        if: steps.validate.outcome == 'failure' || steps.plan.outcome == 'failure'
+        run: exit 1
