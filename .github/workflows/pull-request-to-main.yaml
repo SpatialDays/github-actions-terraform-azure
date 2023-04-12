@@ -1,7 +1,8 @@
 # standardized template for terraform plan on pull request to branch made 
 # by @ivica3730k
 
-# This GitHub action is triggered by a pull request on the dev branch. 
+# This GitHub action is triggered by a pull request on the main branch. 
+
 # It is responsible for running Terraform validation and Terraform plan and providing feedback on the pull request with the results.
 # The action sets environment variables from the secrets and runs Terraform commands.
 # It checks out the code, performs envsubst on the provider_secrets_template file with the environment variables, 
@@ -12,7 +13,7 @@
 
 # to use it, change your branch names, environment name and secrets names
 
-name: Terraform plan on pull request to dev
+name: Terraform plan on pull request to main
 
 permissions:
   contents: read
@@ -21,12 +22,12 @@ permissions:
 on:
   pull_request:
     branches:
-      - dev
+      - main
   
 jobs:
   terraform-plan:
     runs-on: ubuntu-latest
-    environment: TF_DEV_SECRETS
+    environment: TF_MAIN_SECRETS
     env:
       TF_VAR_SUBSCRIPTION_ID: ${{ secrets.TF_VAR_SUBSCRIPTION_ID }}
       TF_VAR_CLIENT_ID: ${{ secrets.TF_VAR_CLIENT_ID }}
